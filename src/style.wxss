@@ -1,0 +1,45 @@
+* {
+  margin: 0px;
+  padding: 0px;
+  box-sizing: border-box;
+}
+html,
+body,
+#app,
+.app {
+  width: 100%;
+  height: 100%;
+}
+.options-menu {
+  visibility: hidden;
+  position: fixed;
+  min-width: unset;
+  top: 5px;
+  right: 5px;
+  max-height: calc(90vh);
+}
+.options-menu-visible {
+  visibility: visible;
+}
+.phone-menu-toggler {
+  visibility: visible;
+  position: fixed;
+  top: 5px;
+  right: 5px;
+}
+@media (max-width: 480px) {
+  .options-menu {
+    visibility: hidden;
+    bottom: 5px;
+    left: 5px;
+  }
+  .options-menu-visible {
+    visibility: visible;
+  }
+  .phone-menu-toggler {
+    visibility: visible;
+    position: fixed;
+    top: 5px;
+    right: 5px;
+  }
+}
