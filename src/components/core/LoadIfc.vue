@@ -84,7 +84,7 @@ onMounted(async () => {
   async function loadIfc() {
     // "https://thatopen.github.io/engine_ui-components/resources/small.ifc"
     const file = await fetch(
-      "https://thatopen.github.io/engine_ui-components/resources/small.ifc"
+      "http://10.25.68.97:12013/zhidajlsynergy/2024/09/20/84f7701c132d4c35bfad0e068727eeb4.ifc"
     );
     const data = await file.arrayBuffer();
     const buffer = new Uint8Array(data);

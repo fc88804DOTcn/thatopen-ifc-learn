@@ -13,7 +13,6 @@ import * as OBF from "@thatopen/components-front";
 import * as WEBIFC from "web-ifc";
 import Stats from "stats.js";
 import { onMounted } from "vue";
-console.log(CUI);
 onMounted(async () => {
   const container = document.getElementById("container")!;
   const components = new OBC.Components();
@@ -40,16 +39,17 @@ onMounted(async () => {
   await fragmentIfcLoader.setup();
   async function loadIfc() {
     const file = await fetch(
-      "https://thatopen.github.io/engine_ui-components/resources/small.ifc"
-      // "http://10.25.68.97:12013/zhidajlsynergy/2024/09/20/84f7701c132d4c35bfad0e068727eeb4.ifc "
+      // "https://thatopen.github.io/engine_ui-components/resources/small.ifc"
+      "http://10.25.68.97:12013/zhidajlsynergy/2024/09/20/84f7701c132d4c35bfad0e068727eeb4.ifc "
     );
     const data = await file.arrayBuffer();
     const buffer = new Uint8Array(data);
     const model = await fragmentIfcLoader.load(buffer);
     model.name = "example";
     world.scene.three.add(model);
-  }
-  fragments.onFragmentsLoaded.add(async (model) => {
+
+    BUI.Manager.init();
+
     // 处理获取实体间关系
     const indexer = components.get(OBC.IfcRelationsIndexer);
     await indexer.process(model);
@@ -62,13 +62,63 @@ onMounted(async () => {
 
     propertiesTable.preserveStructureOnFilter = true;
     propertiesTable.indentationInText = false;
-  });
+
+    const highlighter = components.get(OBF.Highlighter);
+    highlighter.setup({ world });
+
+    highlighter.events.select.onHighlight.add((fragmentIdMap) => {
+      updatePropertiesTable({ fragmentIdMap });
+    });
+
+    highlighter.events.select.onClear.add(() =>
+      updatePropertiesTable({ fragmentIdMap: {} })
+    );
+
+    const propertiesPanel = BUI.Component.create(() => {
+      const expandTable = (e: Event) => {
+        const button = e.target as BUI.Button;
+        propertiesTable.expanded = !propertiesTable.expanded;
+        button.label = propertiesTable.expanded ? "展开" : "折叠";
+      };
+
+      return BUI.html`
+    <bim-panel label="图纸详情">
+      <bim-panel-section label="构件数据">
+        <div style="display: flex; gap: 0.5rem;">
+          <bim-button @click=${expandTable} label=${
+        propertiesTable.expanded ? "折叠" : "展开"
+      }></bim-button> 
+        </div> 
+        ${propertiesTable}
+      </bim-panel-section>
+    </bim-panel>
+  `;
+    });
+
+    const app = document.createElement("bim-grid");
+    app.layouts = {
+      main: {
+        template: `
+    "propertiesPanel viewport"
+    /25rem 1fr
+    `,
+        elements: { propertiesPanel, container },
+      },
+    };
+
+    app.layout = "main";
+    container.append(app);
+  }
+  fragments.onFragmentsLoaded.add(async (model) => {});
   await loadIfc();
 
   const stats = new Stats();
   stats.showPanel(0);
   document.body.append(stats.dom);
-  stats.dom.style.left = "0px";
+  stats.dom.style.left = "10px";
+  stats.dom.style.top = "10px";
+  stats.dom.style.borderRadius = "5px";
+  stats.dom.style.overflow = "hidden";
   stats.dom.style.zIndex = "unset";
   world.renderer.onBeforeUpdate.add(() => stats.begin());
   world.renderer.onAfterUpdate.add(() => stats.end());
@@ -85,6 +135,29 @@ onMounted(async () => {
   .container {
     width: 100%;
     height: 100%;
+    position: relative;
+    > :deep(bim-grid) {
+      position: absolute;
+      background: transparent;
+      width: unset;
+      bottom: 10px;
+      left: 10px;
+      height: calc(100% - 80px);
+      // 这一块儿生效
+      > bim-panel {
+        background: #27323e;
+        border-radius: 5px;
+        border: 1px solid #8c7b38;
+
+        // 以下不生效，去掉:deep也不生效
+        > :deep(.parent) {
+          background: red;
+          bim-label {
+            border-color: #8c7b38;
+          }
+        }
+      }
+    }
   }
 }
 </style>
