@@ -11,6 +11,8 @@ import * as BUI from "@thatopen/ui";
 import * as WEBIFC from "web-ifc";
 import * as OBC from "@thatopen/components";
 
+import axios from "axios";
+
 import { onMounted } from "vue";
 onMounted(async () => {
   const container = document.getElementById("container")!;
